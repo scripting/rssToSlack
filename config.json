@@ -9,7 +9,7 @@
 			"slack": {
 				"urlWebHook": "https://hooks.slack.com/services/abc/def/ghi",
 				"hookName": "Hacker News",
-				"urlIcon": "http://static.scripting.com/larryKing/images/2012/10/16/clarus.gif",
+				"urlIcon": "http://radio3.io/icons/clarus.gif",
 				"channel": "#hackernews"
 				}
 			}
