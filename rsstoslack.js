@@ -1,5 +1,29 @@
 var myVersion = "0.42", myProductName = "RSS to Slack"; 
 
+	//The MIT License (MIT)
+	
+	//Copyright (c) 2014 Dave Winer
+	
+	//Permission is hereby granted, free of charge, to any person obtaining a copy
+	//of this software and associated documentation files (the "Software"), to deal
+	//in the Software without restriction, including without limitation the rights
+	//to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	//copies of the Software, and to permit persons to whom the Software is
+	//furnished to do so, subject to the following conditions:
+	
+	//The above copyright notice and this permission notice shall be included in all
+	//copies or substantial portions of the Software.
+	
+	//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	//IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	//FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	//AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	//LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	//OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	//SOFTWARE.
+	
+	//structured listing: http://scripting.com/listings/rsstoslack.html
+	
 var http = require ("http"); 
 var https = require ("https");
 var md5 = require ("MD5");
@@ -14,7 +38,6 @@ var appStats = {
 	};
 var flStatsChanged = false;
 var appConfig;
-
 
 function jsonStringify (jstruct) { 
 	return (JSON.stringify (jstruct, undefined, 4));
@@ -60,77 +83,6 @@ function sendToSlack (s, urlWebHook, theUsername, theIconUrl, theIconEmoji, theC
 			}
 		});
 	}
-function getItemGuid (item) {
-	function ok (val) {
-		if (val != undefined) {
-			if (val != "null") {
-				return (true);
-				}
-			}
-		return (false);
-		}
-	if (ok (item.guid)) {
-		return (item.guid);
-		}
-	var guid = "";
-	if (ok (item.pubDate)) {
-		guid += item.pubDate;
-		}
-	if (ok (item.link)) {
-		guid += item.link;
-		}
-	if (ok (item.title)) {
-		guid += item.title;
-		}
-	if (guid.length > 0) {
-		guid = md5 (guid);
-		}
-	return (guid);
-	}
-function readConfig (callback) {
-	fs.readFile ("config.json", "utf8", function (err, data) {
-		var dataAboutRead = {
-			Body: data
-			};
-		if (err) {
-			console.log ("readConfig: error == " + jsonStringify (err));
-			}
-		else {
-			appConfig = JSON.parse (dataAboutRead.Body);
-			console.log ("readConfig: " + jsonStringify (appConfig));
-			appStats.ctReads++;
-			appStats.ctBytesRead += dataAboutRead.Body.length;
-			statsChanged ();
-			}
-		if (callback != undefined) {
-			callback ();
-			}
-		});
-	}
-function readStats (callback) {
-	fs.readFile ("stats.json", "utf8", function (err, data) {
-		var dataAboutRead = {
-			Body: data
-			};
-		if (err) {
-			}
-		else {
-			var storedPrefs = JSON.parse (dataAboutRead.Body);
-			for (var x in storedPrefs) {
-				appStats [x] = storedPrefs [x];
-				}
-			appStats.ctReads++;
-			appStats.ctBytesRead += dataAboutRead.Body.length;
-			statsChanged ();
-			}
-		if (callback != undefined) {
-			callback ();
-			}
-		});
-	}
-function writeStats () {
-	fs.writeFile ("stats.json", jsonStringify (appStats));
-	}
 function readFeed (urlfeed, itemcallback, feedcallback) {
 	var req = request (urlfeed);
 	var feedparser = new FeedParser ();
@@ -157,6 +109,33 @@ function readFeed (urlfeed, itemcallback, feedcallback) {
 	feedparser.on ("error", function (res) {
 		console.log ("readFeed: feedparser error == " + jsonStringify (res));
 		});
+	}
+function getItemGuid (item) {
+	function ok (val) {
+		if (val != undefined) {
+			if (val != "null") {
+				return (true);
+				}
+			}
+		return (false);
+		}
+	if (ok (item.guid)) {
+		return (item.guid);
+		}
+	var guid = "";
+	if (ok (item.pubDate)) {
+		guid += item.pubDate;
+		}
+	if (ok (item.link)) {
+		guid += item.link;
+		}
+	if (ok (item.title)) {
+		guid += item.title;
+		}
+	if (guid.length > 0) {
+		guid = md5 (guid);
+		}
+	return (guid);
 	}
 function checkOneFeed (theConfig, callback) {
 	var itemsInFeed = new Object (), ctnewitems = 0;
@@ -231,11 +210,48 @@ function checkAllFeeds (callback) {
 		}
 	doNextRiver (0);
 	}
-function everySecond () {
-	if (flStatsChanged) {
-		flStatsChanged = false;
-		writeStats ();
-		}
+function readConfig (callback) {
+	fs.readFile ("config.json", "utf8", function (err, data) {
+		var dataAboutRead = {
+			Body: data
+			};
+		if (err) {
+			console.log ("readConfig: error == " + jsonStringify (err));
+			}
+		else {
+			appConfig = JSON.parse (dataAboutRead.Body);
+			appStats.ctReads++;
+			appStats.ctBytesRead += dataAboutRead.Body.length;
+			statsChanged ();
+			}
+		if (callback != undefined) {
+			callback ();
+			}
+		});
+	}
+function readStats (callback) {
+	fs.readFile ("stats.json", "utf8", function (err, data) {
+		var dataAboutRead = {
+			Body: data
+			};
+		if (err) {
+			}
+		else {
+			var storedPrefs = JSON.parse (dataAboutRead.Body);
+			for (var x in storedPrefs) {
+				appStats [x] = storedPrefs [x];
+				}
+			appStats.ctReads++;
+			appStats.ctBytesRead += dataAboutRead.Body.length;
+			statsChanged ();
+			}
+		if (callback != undefined) {
+			callback ();
+			}
+		});
+	}
+function writeStats () {
+	fs.writeFile ("stats.json", jsonStringify (appStats));
 	}
 function everyMinute () { 
 	var now = new Date ();
@@ -245,7 +261,12 @@ function everyMinute () {
 		sleepTillTopOfMinute (everyMinute);
 		});
 	}
-
+function everySecond () {
+	if (flStatsChanged) {
+		flStatsChanged = false;
+		writeStats ();
+		}
+	}
 function startup () {
 	readConfig (function () {
 		readStats (function () {
@@ -256,5 +277,3 @@ function startup () {
 		});
 	}
 startup ();
-
-
