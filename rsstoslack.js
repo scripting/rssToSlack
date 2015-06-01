@@ -178,7 +178,7 @@ function checkOneFeed (theConfig, callback) {
 		}
 	if (theConfig.enabled) {
 		var theStats = appStats.feeds [theConfig.name];
-		if (theStats === undefined) { //cool! a new river
+		if (theStats === undefined) { //cool! a new feed
 			theStats = {
 				ctFeedChecks: 0, whenLastCheck: new Date (0),
 				ctStories: 0, whenLastStory: new Date (0),
