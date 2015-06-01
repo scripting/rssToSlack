@@ -7,13 +7,13 @@ var FeedParser = require ("feedparser");
 var request = require ("request");
 var fs = require ("fs");
 
-var myStats = { 
+var appStats = { 
 	ctStarts: 0, whenLastStart: new Date (0),
 	ctReadErrors: 0, ctReads: 0, ctBytesRead: 0,
 	feeds: new Object ()
 	};
 var flStatsChanged = false;
-var myConfig;
+var appConfig;
 
 
 function jsonStringify (jstruct) { 
@@ -96,10 +96,10 @@ function readConfig (callback) {
 			console.log ("readConfig: error == " + jsonStringify (err));
 			}
 		else {
-			myConfig = JSON.parse (dataAboutRead.Body);
-			console.log ("readConfig: " + jsonStringify (myConfig));
-			myStats.ctReads++;
-			myStats.ctBytesRead += dataAboutRead.Body.length;
+			appConfig = JSON.parse (dataAboutRead.Body);
+			console.log ("readConfig: " + jsonStringify (appConfig));
+			appStats.ctReads++;
+			appStats.ctBytesRead += dataAboutRead.Body.length;
 			statsChanged ();
 			}
 		if (callback != undefined) {
@@ -117,10 +117,10 @@ function readStats (callback) {
 		else {
 			var storedPrefs = JSON.parse (dataAboutRead.Body);
 			for (var x in storedPrefs) {
-				myStats [x] = storedPrefs [x];
+				appStats [x] = storedPrefs [x];
 				}
-			myStats.ctReads++;
-			myStats.ctBytesRead += dataAboutRead.Body.length;
+			appStats.ctReads++;
+			appStats.ctBytesRead += dataAboutRead.Body.length;
 			statsChanged ();
 			}
 		if (callback != undefined) {
@@ -129,7 +129,7 @@ function readStats (callback) {
 		});
 	}
 function writeStats () {
-	fs.writeFile ("stats.json", jsonStringify (myStats));
+	fs.writeFile ("stats.json", jsonStringify (appStats));
 	}
 function readFeed (urlfeed, itemcallback, feedcallback) {
 	var req = request (urlfeed);
@@ -161,22 +161,24 @@ function readFeed (urlfeed, itemcallback, feedcallback) {
 function checkOneFeed (theConfig, callback) {
 	var itemsInFeed = new Object (), ctnewitems = 0;
 	function sendItem (item) {
-		var slackLinkText = " (link)";
-		console.log (theConfig.name + ": " + item.title);
-		if (theConfig.slack !== undefined) {
-			if (item.title !== undefined) {
-				var s = item.title;
-				if (item.link !== undefined) {
-					s += ". <" + item.link + "|" + slackLinkText + ">";
+		if (appConfig.flPostingEnabled) {
+			var slackLinkText = " (link)";
+			console.log (theConfig.name + ": " + item.title);
+			if (theConfig.slack !== undefined) {
+				if (item.title !== undefined) {
+					var s = item.title;
+					if (item.link !== undefined) {
+						s += ". <" + item.link + "|" + slackLinkText + ">";
+						}
+					sendToSlack (s, theConfig.slack.urlWebHook, theConfig.slack.hookName, theConfig.slack.urlIcon, theConfig.slack.iconEmoji, theConfig.slack.channel);
 					}
-				sendToSlack (s, theConfig.slack.urlWebHook, theConfig.slack.hookName, theConfig.slack.urlIcon, theConfig.slack.iconEmoji, theConfig.slack.channel);
 				}
 			}
 		}
 	function itemcallback (item) { //called once for each item in the feed
 		var theGuid = getItemGuid (item);
 		itemsInFeed [theGuid] = true;
-		if ((!myConfig.flAtMostOnePostPerMinute) || (ctnewitems == 0)) {
+		if ((!appConfig.flAtMostOnePostPerMinute) || (ctnewitems == 0)) {
 			if (theStats.idsSeen [theGuid] === undefined) { //new item
 				theStats.idsSeen [theGuid] = true;
 				statsChanged ();
@@ -196,14 +198,14 @@ function checkOneFeed (theConfig, callback) {
 			}
 		}
 	if (theConfig.enabled) {
-		var theStats = myStats.feeds [theConfig.name];
+		var theStats = appStats.feeds [theConfig.name];
 		if (theStats === undefined) { //cool! a new river
 			theStats = {
 				ctFeedChecks: 0, whenLastCheck: new Date (0),
 				ctStories: 0, whenLastStory: new Date (0),
 				idsSeen: new Object ()
 				};
-			myStats.feeds [theConfig.name] = theStats;
+			appStats.feeds [theConfig.name] = theStats;
 			}
 		console.log ("checkOneFeed: checking \"" + theConfig.name + "\".");
 		readFeed (theConfig.urlFeed, itemcallback, feedcallback);
@@ -216,8 +218,8 @@ function checkOneFeed (theConfig, callback) {
 	}
 function checkAllFeeds (callback) {
 	function doNextRiver (ix) {
-		if (ix < myConfig.feeds.length) {
-			checkOneFeed (myConfig.feeds [ix], function () {
+		if (ix < appConfig.feeds.length) {
+			checkOneFeed (appConfig.feeds [ix], function () {
 				doNextRiver (ix + 1);
 				});
 			}
