@@ -186,7 +186,6 @@ function checkOneFeed (theConfig, callback) {
 				};
 			appStats.feeds [theConfig.name] = theStats;
 			}
-		console.log ("checkOneFeed: checking \"" + theConfig.name + "\".");
 		readFeed (theConfig.urlFeed, itemcallback, feedcallback);
 		}
 	else {
