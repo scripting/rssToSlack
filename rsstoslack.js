@@ -149,7 +149,7 @@ function checkOneFeed (theConfig, callback) {
 					if (item.link !== undefined) {
 						s += ". <" + item.link + "|" + slackLinkText + ">";
 						}
-					sendToSlack (s, theConfig.slack.urlWebHook, theConfig.slack.hookName, theConfig.slack.urlIcon, theConfig.slack.iconEmoji, theConfig.slack.channel);
+					sendToSlack (s, theConfig.slack.urlWebHook, theConfig.slack.hookName, theConfig.slack.urlIcon, theConfig.slack.emojiIcon, theConfig.slack.channel);
 					}
 				}
 			}
