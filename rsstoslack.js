@@ -1,4 +1,4 @@
-var myVersion = "0.42", myProductName = "RSS to Slack"; 
+var myVersion = "0.43", myProductName = "RSS to Slack"; 
 
 	//The MIT License (MIT)
 	
@@ -253,11 +253,13 @@ function writeStats () {
 	fs.writeFile ("stats.json", jsonStringify (appStats));
 	}
 function everyMinute () { 
-	var now = new Date ();
-	console.log ("\neveryMinute: " + now.toLocaleTimeString ());
-	checkAllFeeds (function () {
-		statsChanged ();
-		sleepTillTopOfMinute (everyMinute);
+	readConfig (function () {
+		var now = new Date ();
+		console.log ("\neveryMinute: " + now.toLocaleTimeString ());
+		checkAllFeeds (function () {
+			statsChanged ();
+			sleepTillTopOfMinute (everyMinute);
+			});
 		});
 	}
 function everySecond () {
