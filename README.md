@@ -38,6 +38,10 @@ The feeds array can have as many elements as you want. rssToSlack will read each
 
 4. Provide information about the Slack channel. Most important provide the URL of the web hook (see above).  You can also specify a name for the hook, an icon, or an emoji character.
 
+####v0.43 -- 6/2/15 by DW
+
+Read config.json once a minute so you don't have to reboot the app to change the configuration.
+
 #### Structured code
 
 You can review the <a href="http://scripting.com/listings/rsstoslack.html">structured version</a> of the code, it might make a little more sense this way. ;-)
