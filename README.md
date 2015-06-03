@@ -40,6 +40,10 @@ The feeds array can have as many elements as you want. rssToSlack will read each
 
 #### Updates
 
+##### v0.44 -- 6/3/15 by DW
+
+Fixed a problem that would cause rssToSlack to stop checking feeds if there was an error. We now check to see if everyMinute is still active in the everySecond script. If not, we restart the chain of calls. 
+
 ##### v0.43 -- 6/2/15 by DW
 
 Read config.json once a minute so you don't have to reboot the app to change the configuration.

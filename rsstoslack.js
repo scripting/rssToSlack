@@ -1,4 +1,4 @@
-var myVersion = "0.43", myProductName = "RSS to Slack"; 
+var myVersion = "0.44a", myProductName = "RSS to Slack"; 
 
 	//The MIT License (MIT)
 	
@@ -38,9 +38,15 @@ var appStats = {
 	};
 var flStatsChanged = false;
 var appConfig;
+var whenLastEveryMinute = new Date (); //6/3/15 by DW
 
 function jsonStringify (jstruct) { 
 	return (JSON.stringify (jstruct, undefined, 4));
+	}
+function secondsSince (when) { 
+	var now = new Date ();
+	when = new Date (when);
+	return ((now - when) / 1000);
 	}
 function statsChanged () {
 	flStatsChanged = true;
@@ -253,8 +259,9 @@ function writeStats () {
 	fs.writeFile ("stats.json", jsonStringify (appStats));
 	}
 function everyMinute () { 
+	var now = new Date ();
+	whenLastEveryMinute = now;
 	readConfig (function () {
-		var now = new Date ();
 		console.log ("\neveryMinute: " + now.toLocaleTimeString ());
 		checkAllFeeds (function () {
 			statsChanged ();
@@ -266,6 +273,10 @@ function everySecond () {
 	if (flStatsChanged) {
 		flStatsChanged = false;
 		writeStats ();
+		}
+	if (secondsSince (whenLastEveryMinute) > 110) { //an error must have stopped the chain of calls
+		console.log ("everySecond: rescheduling everyMinute. Must have been an error that caused it to die.");
+		sleepTillTopOfMinute (everyMinute);
 		}
 	}
 function startup () {
